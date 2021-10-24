@@ -1,11 +1,13 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
 import ru.akirakozov.sd.refactoring.utils.CommandContent;
+import ru.akirakozov.sd.refactoring.utils.ResponseFormer;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.annotation.Repeatable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -19,6 +21,7 @@ public class QueryServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String command = request.getParameter("command");
+        ResponseFormer rf = new ResponseFormer(response);
 
         Map<String, CommandContent> knownCommands = Map.of(
             "max", new CommandContent("<h1>Product with max price:</h1>", "SELECT * FROM PRODUCT ORDER BY PRICE DESC LIMIT 1"),
@@ -32,20 +35,17 @@ public class QueryServlet extends HttpServlet {
                 try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
                     Statement stmt = c.createStatement();
                     ResultSet rs = stmt.executeQuery(knownCommands.get(command).sqlQuery);
-                    response.getWriter().println("<html><body>");
-                    response.getWriter().println(knownCommands.get(command).responseHeader);
+                    rf.append(knownCommands.get(command).responseHeader);
 
                     if (command.equals("min") || command.equals("max")) {
                         while (rs.next()) {
                             String name = rs.getString("name");
                             int price = rs.getInt("price");
-                            response.getWriter().println(name + "\t" + price + "</br>");
+                            rf.append(name + "\t" + price + "</br>");
                         }
                     } else if (command.equals("count") || command.equals("sum")) {
-                        response.getWriter().println(rs.getInt(1));
+                        rf.append(Integer.toString(rs.getInt(1)));
                     }
-
-                    response.getWriter().println("</body></html>");
 
                     rs.close();
                     stmt.close();
@@ -54,10 +54,8 @@ public class QueryServlet extends HttpServlet {
                 throw new RuntimeException(e);
             }
         } else {
-            response.getWriter().println("Unknown command: " + command);
+            rf.append("Unknown command: " + command);
         }
-
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_OK);
+        rf.finishForming();
     }
 }

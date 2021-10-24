@@ -1,5 +1,7 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
+import ru.akirakozov.sd.refactoring.utils.ResponseFormer;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,6 +17,8 @@ public class AddProductServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        ResponseFormer rf = new ResponseFormer(response);
+
         String name = request.getParameter("name");
         long price = Long.parseLong(request.getParameter("price"));
 
@@ -26,12 +30,11 @@ public class AddProductServlet extends HttpServlet {
                 stmt.executeUpdate(sql);
                 stmt.close();
             }
+
+            rf.append("OK");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().println("OK");
+        rf.finishForming();
     }
 }
