@@ -1,5 +1,8 @@
 package ru.akirakozov.sd.refactoring.utils;
 
+import org.eclipse.jetty.server.Server;
+import ru.akirakozov.sd.refactoring.Main;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -11,7 +14,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DBUtils {
+public class TestUtils {
     public static void flushDB() {
         try (
             Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
@@ -44,8 +47,14 @@ public class DBUtils {
     }
 
     public static void fillDB() throws URISyntaxException, IOException, InterruptedException {
-        DBUtils.makeRequest("http://localhost:8081/add-product?name=comm1&price=100");
-        DBUtils.makeRequest("http://localhost:8081/add-product?name=comm2&price=200");
-        DBUtils.makeRequest("http://localhost:8081/add-product?name=comm3&price=300");
+        TestUtils.makeRequest("http://localhost:8081/add-product?name=comm1&price=100");
+        TestUtils.makeRequest("http://localhost:8081/add-product?name=comm2&price=200");
+        TestUtils.makeRequest("http://localhost:8081/add-product?name=comm3&price=300");
+    }
+
+    public static ServerHolder startApplication() throws Exception {
+        ServerHolder application = new ServerHolder();
+        application.setupServer();
+        return application;
     }
 }

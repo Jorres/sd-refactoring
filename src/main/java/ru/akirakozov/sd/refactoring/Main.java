@@ -6,6 +6,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import ru.akirakozov.sd.refactoring.servlet.AddProductServlet;
 import ru.akirakozov.sd.refactoring.servlet.GetProductsServlet;
 import ru.akirakozov.sd.refactoring.servlet.QueryServlet;
+import ru.akirakozov.sd.refactoring.utils.ServerHolder;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,17 +28,8 @@ public class Main {
             stmt.close();
         }
 
-        Server server = new Server(8081);
-
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath("/");
-        server.setHandler(context);
-
-        context.addServlet(new ServletHolder(new AddProductServlet()), "/add-product");
-        context.addServlet(new ServletHolder(new GetProductsServlet()),"/get-products");
-        context.addServlet(new ServletHolder(new QueryServlet()),"/query");
-
-        server.start();
-        server.join();
+        ServerHolder serverHolder = new ServerHolder();
+        serverHolder.setupServer();
+        serverHolder.join();
     }
 }
