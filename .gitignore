@@ -1,0 +1,8 @@
+# IntelliJ Idea project files
+.idea
+
+# SQLite app database
+test.db
+
+# App artifacts
+target
