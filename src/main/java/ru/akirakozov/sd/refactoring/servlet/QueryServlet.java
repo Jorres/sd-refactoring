@@ -1,17 +1,13 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
 import ru.akirakozov.sd.refactoring.utils.CommandContent;
+import ru.akirakozov.sd.refactoring.utils.DBController;
 import ru.akirakozov.sd.refactoring.utils.ResponseFormer;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.annotation.Repeatable;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -32,11 +28,8 @@ public class QueryServlet extends HttpServlet {
 
         if (knownCommands.containsKey(command)) {
             try {
-                try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
-                    Statement stmt = c.createStatement();
-                    ResultSet rs = stmt.executeQuery(knownCommands.get(command).sqlQuery);
+                DBController.makeDBOperationWithRs(knownCommands.get(command).sqlQuery, rs -> {
                     rf.append(knownCommands.get(command).responseHeader);
-
                     if (command.equals("min") || command.equals("max")) {
                         while (rs.next()) {
                             String name = rs.getString("name");
@@ -46,10 +39,7 @@ public class QueryServlet extends HttpServlet {
                     } else if (command.equals("count") || command.equals("sum")) {
                         rf.append(Integer.toString(rs.getInt(1)));
                     }
-
-                    rs.close();
-                    stmt.close();
-                }
+                });
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
